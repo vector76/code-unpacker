@@ -9,6 +9,12 @@ table, th, td {
 .content {
     display: none;
 }
+.workerCrude {
+  background-color: #fff1c1;
+}
+.worker {
+  background-color: #e2e2e2;
+}
 </style>
 <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
 </head>
@@ -85,7 +91,7 @@ Choose save file to process:
       // loop through Objects to find Workers
       var trows = [];
       for (var i = 0, len = s.Objects.length; i < len; i++) {
-        if (s.Objects[i].ID == "Worker") {
+        if (s.Objects[i].ID == "Worker" || s.Objects[i].ID == "WorkerCrude") {
           // Process worker
           var htext = '<pre>' + processWorkerHi(s.Objects[i]).join('<br>') + '</pre>';
           var ctext = '<pre>' + processWorkerCompiled(s.Objects[i]).join('<br>') + '</pre>';
@@ -96,10 +102,12 @@ Choose save file to process:
           else {  // just put a simple div around it
             ctext = '<div>' + ctext + '</div>';
           }
-          trows.push("<td valign='top'>" + s.Objects[i].WN + "</td><td valign='top'>" + htext + "</td><td valign='top'>" + ctext + "</td>");
+          var rowclass = (s.Objects[i].ID == "Worker") ? 'worker' : 'workerCrude';
+          trows.push("<tr class='" + rowclass + "'><td valign='top'>" + s.Objects[i].WN + 
+            "</td><td valign='top'>" + htext + "</td><td valign='top'>" + ctext + "</td></tr>");
         }
       }
-      var table = '<table><tr>' + trows.join('</tr><tr>') + '</tr></table>';
+      var table = '<table>' + trows.join('') + '</table>';
       
       document.getElementById('output').innerHTML = table;
       
