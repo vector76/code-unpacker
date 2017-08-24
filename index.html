@@ -75,6 +75,15 @@ Choose save file to process:
   }
   
   
+  function workerInfo(w) {
+    var result = [];
+    result.push(w.WN);  // name
+    result.push('location: (' + w.TX + ', ' + w.TY + ')');
+    result.push('energy: ' + Math.floor(w.Energy * 10)/10);
+    return result;
+  }
+  
+  
   function handleFileSelect(evt) {
     var f = evt.target.files[0]; // get first element of FileList object
 
@@ -93,6 +102,7 @@ Choose save file to process:
       for (var i = 0, len = s.Objects.length; i < len; i++) {
         if (s.Objects[i].ID == "Worker" || s.Objects[i].ID == "WorkerCrude") {
           // Process worker
+          var winfo = '<pre>' + workerInfo(s.Objects[i]).join('<br>') + '</pre>';
           var htext = '<pre>' + processWorkerHi(s.Objects[i]).join('<br>') + '</pre>';
           var ctext = '<pre>' + processWorkerCompiled(s.Objects[i]).join('<br>') + '</pre>';
           if (ctext != '<pre>No compiled instructions</pre>') {
@@ -103,7 +113,7 @@ Choose save file to process:
             ctext = '<div>' + ctext + '</div>';
           }
           var rowclass = (s.Objects[i].ID == "Worker") ? 'worker' : 'workerCrude';
-          trows.push("<tr class='" + rowclass + "'><td valign='top'>" + s.Objects[i].WN + 
+          trows.push("<tr class='" + rowclass + "'><td valign='top'>" + winfo + 
             "</td><td valign='top'>" + htext + "</td><td valign='top'>" + ctext + "</td></tr>");
         }
       }
