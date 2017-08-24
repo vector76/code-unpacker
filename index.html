@@ -1,3 +1,102 @@
-<html><head></head>
-<body></body>
+<html>
+<head>
+<title>Autonauts Script Extractor</title>
+<style>
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+</style>
+</head>
+<body>
+Choose save file to process: 
+<input type="file" id="file" name="file" accept=".txt">
+  
+<div id="output"></div>
+      
+<script>
+  function processWorkerCompiled(w) {
+    var result = [];
+    // result.push("Worker named " + w.WN + ":");
+    if (w.Interpreter.ScriptLocalArray.length == 0) {
+      result.push("No compiled instructions");
+    }
+    else {
+      var current = w.Interpreter.ScriptLocalArray[0].Instruction;
+      var inslist = w.Interpreter.ScriptLocalArray[0].Script.Instructions;  // list of instructions
+      for (var i=0; i < inslist.length; i++) {
+        var ins = inslist[i];
+        var iscur = (i == current) ? '> ' : '  ';  // cursor depending if this is the currently running instruction
+        result.push(iscur + ins.Ins + "," + ins.Var1 + "," + ins.Var2 + "," + ins.Var3 + "," + ins.Var4);
+      }
+    }
+    //console.log(result);
+    return result;
+  }
+  
+  
+  // recursive traversal of high instructions array, keeping track of level for indentation purposes
+  function traverse(result, harr, level) {
+    var indent = '  '.repeat(level);
+    for (var i=0; i < harr.length; i++) {
+      var content = harr[i].Type + ' ' + harr[i].ArgName + ' ' + harr[i].OT + ' ' + harr[i].V1;
+      if (harr[i].X != 0 && harr[i].y != 0) {
+        content = content + " (" + harr[i].X + ", " + harr[i].y + ")";
+      }
+      result.push(indent + content.replace(/  +/g, ' '));
+      if (harr[i].Children !== undefined) {
+        result = traverse(result, harr[i].Children, level+1);
+      }
+    }
+    return result;
+  }
+  
+  
+  function processWorkerHi(w) {
+    var result = [];
+    if (w.Interpreter.HighInstructionsArray === undefined) {
+      result.push("No high instructions array");
+    }
+    else {
+      result = traverse(result, w.Interpreter.HighInstructionsArray, 0);
+    }
+    //console.log(result);
+    return result;
+  }
+  
+  
+  function handleFileSelect(evt) {
+    var f = evt.target.files[0]; // get first element of FileList object
+
+    if (f === undefined) {
+      return;
+    }
+    
+    var reader = new FileReader();
+    
+    reader.onload = function(event) {
+      // event.target.result has the contents of the file, parse it as JSON into a big object
+      var s = JSON.parse(event.target.result);
+      var version = s.Version;  // may be useful if things change...
+      // loop through Objects to find Workers
+      var trows = [];
+      for (var i = 0, len = s.Objects.length; i < len; i++) {
+        if (s.Objects[i].ID == "Worker") {
+          // Process worker
+          var htext = '<pre>' + processWorkerHi(s.Objects[i]).join('<br>') + '</pre>';
+          var ctext = '<pre>' + processWorkerCompiled(s.Objects[i]).join('<br>') + '</pre>';
+          trows.push("<td valign='top'>" + s.Objects[i].WN + "</td><td valign='top'>" + htext + "</td><td valign='top'>" + ctext + "</td>");
+        }
+      }
+      var table = '<table><tr>' + trows.join('</tr><tr>') + '</tr></table>';
+      
+      document.getElementById('output').innerHTML = table;
+    };
+    
+    reader.readAsText(f);
+  }
+
+  document.getElementById('file').addEventListener('change', handleFileSelect, false);
+</script>
+</body>
 </html>
