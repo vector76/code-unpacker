@@ -32,6 +32,7 @@ Choose save file to process:
       result.push("No compiled instructions");
     }
     else {
+      result.push("Compiled instructions:");
       var current = w.Interpreter.ScriptLocalArray[0].Instruction;
       var inslist = w.Interpreter.ScriptLocalArray[0].Script.Instructions;  // list of instructions
       for (var i=0; i < inslist.length; i++) {
@@ -84,6 +85,18 @@ Choose save file to process:
   }
   
   
+  function currentState(w) {
+    var result = [];
+    result.push('Current state:');
+    for (var i=0; i < w.Interpreter.GlobalArray.length; i++) {
+      if (w.Interpreter.GlobalArray[i] != '') {
+        result.push("  Global" + i + " = " + w.Interpreter.GlobalArray[i]);
+      }
+    }
+    return result;
+  }
+  
+  
   function handleFileSelect(evt) {
     var f = evt.target.files[0]; // get first element of FileList object
 
@@ -106,8 +119,12 @@ Choose save file to process:
           var htext = '<pre>' + processWorkerHi(s.Objects[i]).join('<br>') + '</pre>';
           var ctext = '<pre>' + processWorkerCompiled(s.Objects[i]).join('<br>') + '</pre>';
           if (ctext != '<pre>No compiled instructions</pre>') {
+            // get worker state variables
+            var wstate = '<pre>' + currentState(s.Objects[i]).join('<br>') + '</pre>';
             // add expand/collapse
-            ctext = '<div class="header"><span>Expand</span></div>' + '<div class="content">' + ctext + '</div>';
+            ctext = '<div class="header"><span>Expand</span></div>' + '<div class="content">' + 
+              '<table style="border: none"><tr style="border: none"><td style="border: none">' + ctext + '</td><td valign="top" style="border: none">' + wstate + '</td></tr></table>' +
+              '</div>';
           }
           else {  // just put a simple div around it
             ctext = '<div>' + ctext + '</div>';
@@ -127,7 +144,7 @@ Choose save file to process:
           //getting the next element
           $content = $header.next();
           //open up the content needed - toggle the slide- if visible, slide up, if not slidedown.
-          $content.slideToggle(500, function () {
+          $content.slideToggle(200, function () {
               //execute this after slideToggle is done
               //change text of header based on visibility of content div
               $header.text(function () {
