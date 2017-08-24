@@ -6,7 +6,11 @@ table, th, td {
     border: 1px solid black;
     border-collapse: collapse;
 }
+.content {
+    display: none;
+}
 </style>
+<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
 </head>
 <body>
 Choose save file to process: 
@@ -85,18 +89,51 @@ Choose save file to process:
           // Process worker
           var htext = '<pre>' + processWorkerHi(s.Objects[i]).join('<br>') + '</pre>';
           var ctext = '<pre>' + processWorkerCompiled(s.Objects[i]).join('<br>') + '</pre>';
+          if (ctext != '<pre>No compiled instructions</pre>') {
+            // add expand/collapse
+            ctext = '<div class="header"><span>Expand</span></div>' + '<div class="content">' + ctext + '</div>';
+          }
+          else {  // just put a simple div around it
+            ctext = '<div>' + ctext + '</div>';
+          }
           trows.push("<td valign='top'>" + s.Objects[i].WN + "</td><td valign='top'>" + htext + "</td><td valign='top'>" + ctext + "</td>");
         }
       }
       var table = '<table><tr>' + trows.join('</tr><tr>') + '</tr></table>';
       
       document.getElementById('output').innerHTML = table;
+      
+      $(".header").click(function () {
+
+          $header = $(this);
+          //getting the next element
+          $content = $header.next();
+          //open up the content needed - toggle the slide- if visible, slide up, if not slidedown.
+          $content.slideToggle(500, function () {
+              //execute this after slideToggle is done
+              //change text of header based on visibility of content div
+              $header.text(function () {
+                  //change text based on condition
+                  return $content.is(":visible") ? "Collapse" : "Expand";
+              });
+          });
+
+      });      
     };
     
     reader.readAsText(f);
   }
 
   document.getElementById('file').addEventListener('change', handleFileSelect, false);
+  
+  $(".header").click(function () {
+      $header = $(this);
+      //getting the next element
+      $content = $header.next();
+      //open up the content needed - toggle the slide- if visible, slide up, if not slidedown.
+      $content.slideToggle(500);
+  });
+  
 </script>
 </body>
 </html>
