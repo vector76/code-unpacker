@@ -15,6 +15,10 @@ table, th, td {
 .worker {
   background-color: #e2e2e2;
 }
+.header {
+  color: #0000FF;
+  text-decoration: underline;
+}
 </style>
 <script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
 </head>
@@ -84,6 +88,39 @@ Choose save file to process:
     return result;
   }
   
+  function workerInventory(w) {
+    var result = [];
+    var hands = [];
+    for (var i=0; i < w.Carry.CarryObjects.length; i++) {
+      if (w.Carry.CarryObjects[i].ID) {
+        hands.push("  " + w.Carry.CarryObjects[i].ID);
+      }
+    }
+    if (hands.length) {
+      result.push("Hands:");
+      result = result.concat(hands);
+    }
+    else {
+      result.push("(Hands empty)");
+    }
+    var inven = [];
+    for (var i=0; i < w.Inv.InvObjects.length; i++) {
+      if (w.Inv.InvObjects[i].ID) {
+        inven.push("  " + w.Inv.InvObjects[i].ID);
+      }
+    }
+    if (inven.length) {
+      result.push("Inventory:");
+      result = result.concat(inven);
+    }
+    else {
+      // Don't bother explicitly showing that inventory is empty
+      // result.push("(Inventory empty)");
+    }
+    
+    return result;
+  }
+  
   
   function currentState(w) {
     var result = [];
@@ -115,19 +152,20 @@ Choose save file to process:
       for (var i = 0, len = s.Objects.length; i < len; i++) {
         if (s.Objects[i].ID == "Worker" || s.Objects[i].ID == "WorkerCrude") {
           // Process worker
-          var winfo = '<pre>' + workerInfo(s.Objects[i]).join('<br>') + '</pre>';
+          var winfo = '<pre>' + workerInfo(s.Objects[i]).join('<br>') + '<br>' + '<br>' +
+              workerInventory(s.Objects[i]).join('<br>') + '</pre>';
           var htext = '<pre>' + processWorkerHi(s.Objects[i]).join('<br>') + '</pre>';
           var ctext = '<pre>' + processWorkerCompiled(s.Objects[i]).join('<br>') + '</pre>';
           if (ctext != '<pre>No compiled instructions</pre>') {
             // get worker state variables
             var wstate = '<pre>' + currentState(s.Objects[i]).join('<br>') + '</pre>';
             // add expand/collapse
-            ctext = '<div class="header"><span>Expand</span></div>' + '<div class="content">' + 
+            ctext = '<div class="header">Expand</div>' + '<div class="content">' + 
               '<table style="border: none"><tr style="border: none"><td style="border: none">' + ctext + '</td><td valign="top" style="border: none">' + wstate + '</td></tr></table>' +
               '</div>';
           }
-          else {  // just put a simple div around it
-            ctext = '<div>' + ctext + '</div>';
+          else {  
+            // fine to use <td><pre>...</pre></td> since that's how the high-level code is shown (i.e. no need for div)
           }
           var rowclass = (s.Objects[i].ID == "Worker") ? 'worker' : 'workerCrude';
           trows.push("<tr class='" + rowclass + "'><td valign='top'>" + winfo + 
@@ -160,14 +198,6 @@ Choose save file to process:
   }
 
   document.getElementById('file').addEventListener('change', handleFileSelect, false);
-  
-  $(".header").click(function () {
-      $header = $(this);
-      //getting the next element
-      $content = $header.next();
-      //open up the content needed - toggle the slide- if visible, slide up, if not slidedown.
-      $content.slideToggle(500);
-  });
   
 </script>
 </body>
