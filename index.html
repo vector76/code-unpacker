@@ -15,6 +15,9 @@ table, th, td {
 .worker {
   background-color: #e2e2e2;
 }
+.dataStorageCrude {
+  background-color: #f2f2f2;
+}
 .header {
   color: #0000FF;
   text-decoration: underline;
@@ -76,6 +79,18 @@ Choose save file to process:
       result = traverse(result, w.Interpreter.HighInstructionsArray, 0);
     }
     //console.log(result);
+    return result;
+  }
+  
+  // Extract high-level program from DataStorageCrude (almost identical to processWorkerHi)
+  function processDscHi(dsc) {
+    var result = [];
+    if (dsc.HighInstructionsArray === undefined) {
+      result.push("No high instructions array");
+    }
+    else {
+      result = traverse(result, dsc.HighInstructionsArray, 0);
+    }
     return result;
   }
   
@@ -148,7 +163,8 @@ Choose save file to process:
       var s = JSON.parse(event.target.result);
       var version = s.Version;  // may be useful if things change...
       // loop through Objects to find Workers
-      var trows = [];
+      var trows = [];    // Worker (and WorkerCrude) table
+      var dscrows = [];  // data storage crude table
       for (var i = 0, len = s.Objects.length; i < len; i++) {
         if (s.Objects[i].ID == "Worker" || s.Objects[i].ID == "WorkerCrude") {
           // Process worker
@@ -171,13 +187,35 @@ Choose save file to process:
           trows.push("<tr class='" + rowclass + "'><td valign='top'>" + winfo + 
             "</td><td valign='top'>" + htext + "</td><td valign='top'>" + ctext + "</td></tr>");
         }
+        else if (s.Objects[i].ID == "DataStorageCrude") {
+          var htext = '<pre>' + processDscHi(s.Objects[i]).join('<br>') + '</pre>';
+          var loc = '<pre>' + 'location: (' + s.Objects[i].TX + ', ' + s.Objects[i].TY + ')' + '<br>' +
+            'name: ' + s.Objects[i].Name + '</pre>';
+          dscrows.push("<tr class='dataStorageCrude'><td valign='top'>" + loc + 
+            "</td><td valign='top'>" + htext + "</td></tr>");
+        }
+        else if (s.Objects[i].ID == "FarmerPlayer") {
+          var carried = s.Objects[i].Carry.CarryObjects.concat(s.Objects[i].Inv.InvObjects);
+          for (var j=0; j < carried.length; j++) {
+            if (carried[j].ID == "DataStorageCrude") {
+              // Very ugly copy-paste needs to be properly factored
+              var htext = '<pre>' + processDscHi(carried[j]).join('<br>') + '</pre>';
+              var loc = '<pre>' + 'location: player inventory  ' + '<br>' +
+                'name: ' + carried[j].Name + '</pre>';
+              dscrows.push("<tr class='dataStorageCrude'><td valign='top'>" + loc + 
+                "</td><td valign='top'>" + htext + "</td></tr>");
+            }
+          }
+        }
       }
-      var table = '<table>' + trows.join('') + '</table>';
-      
-      document.getElementById('output').innerHTML = table;
+      var table = '<h2>Worker bots and crude worker bots:</h2><table>' + trows.join('') + '</table>';
+      var dsctable = '';
+      if (dscrows.length) {
+        dsctable = '<h2>Crude data storage:</h2><table>' + dscrows.join('') + '</table>';
+      }
+      document.getElementById('output').innerHTML = dsctable + table;
       
       $(".header").click(function () {
-
           $header = $(this);
           //getting the next element
           $content = $header.next();
@@ -190,8 +228,7 @@ Choose save file to process:
                   return $content.is(":visible") ? "Collapse" : "Expand";
               });
           });
-
-      });      
+      });
     };
     
     reader.readAsText(f);
