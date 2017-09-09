@@ -9,11 +9,14 @@ table, th, td {
 .content {
     display: none;
 }
-.workerCrude {
+.WorkerCrude {
   background-color: #fff1c1;
 }
-.worker {
+.Worker {
   background-color: #e2e2e2;
+}
+.WorkerSteam {
+  background-color: #ffe2e2;
 }
 .dataStorageCrude {
   background-color: #f2f2f2;
@@ -166,7 +169,7 @@ Choose save file to process:
       var trows = [];    // Worker (and WorkerCrude) table
       var dscrows = [];  // data storage crude table
       for (var i = 0, len = s.Objects.length; i < len; i++) {
-        if (s.Objects[i].ID == "Worker" || s.Objects[i].ID == "WorkerCrude") {
+        if (s.Objects[i].ID == "Worker" || s.Objects[i].ID == "WorkerCrude" || s.Objects[i].ID == "WorkerSteam") {
           // Process worker
           var winfo = '<pre>' + workerInfo(s.Objects[i]).join('<br>') + '<br>' + '<br>' +
               workerInventory(s.Objects[i]).join('<br>') + '</pre>';
@@ -183,7 +186,7 @@ Choose save file to process:
           else {  
             // fine to use <td><pre>...</pre></td> since that's how the high-level code is shown (i.e. no need for div)
           }
-          var rowclass = (s.Objects[i].ID == "Worker") ? 'worker' : 'workerCrude';
+          var rowclass = s.Objects[i].ID;
           trows.push("<tr class='" + rowclass + "'><td valign='top'>" + winfo + 
             "</td><td valign='top'>" + htext + "</td><td valign='top'>" + ctext + "</td></tr>");
         }
@@ -208,7 +211,7 @@ Choose save file to process:
           }
         }
       }
-      var table = '<h2>Worker bots and crude worker bots:</h2><table>' + trows.join('') + '</table>';
+      var table = '<h2><span class="Worker">Basic Workerbots</span>, <span class="WorkerCrude">Crude Workerbots</span>, and <span class="WorkerSteam">Steam Workerbots</span>:</h2><table>' + trows.join('') + '</table>';
       var dsctable = '';
       if (dscrows.length) {
         dsctable = '<h2>Crude data storage:</h2><table>' + dscrows.join('') + '</table>';
